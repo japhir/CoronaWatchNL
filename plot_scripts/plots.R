@@ -19,25 +19,20 @@ daily <- test %>%
   bind_rows(hosp %>%
               mutate(meas = "Aantal gehospitaliseerde mensen")) %>%
   bind_rows(fata %>%
-              mutate(meas = "Aantal overleden mensen"))
+              mutate(meas = "Aantal overleden mensen")) %>%
+  mutate(meas = forcats::fct_inorder(meas))
 
 daily %>%
-  ggplot(aes(x = Datum, y = Aantal, colour = meas)) +
-  geom_line() +
+  ggplot(aes(x = Datum, y = Aantal, fill = meas)) +
+  geom_col(width = .65, position = position_dodge2(preserve = "single")) +
   scale_x_date(
     date_labels = "%d-%m-%Y",
     date_breaks = "1 weeks",
     date_minor_breaks = "1 days") +
-  geom_rect(aes(xmin = start_datum,
-                xmax = verwachtte_einddatum,
-                ymin = -Inf,
-                ymax = -0.025 * max(test$Aantal, na.rm = TRUE),
-                fill = name),
-            inherit.aes = FALSE, data = measures) +
-  geom_rug(aes(x = start_datum), inherit.aes = FALSE, data = measures) +
+    geom_rug(aes(x = start_datum, colour = name), inherit.aes = FALSE, size = 1.1, data = measures) +
   coord_cartesian(xlim = c(min(test$Datum), max(test$Datum))) +
-  scale_fill_viridis_d("Maatregel", guide = guide_legend(direction = "vertical")) +
-  scale_colour_discrete("", guide = guide_legend(direction = "vertical")) +
+  scale_fill_brewer("Meting", palette = "Reds", guide = guide_legend(direction = "vertical")) +
+  scale_colour_viridis_d("Maatregel", direction = -1, guide = guide_legend(direction = "vertical")) +
   ggtitle("Aantal positief-geteste Coronavirus besmettingen in Nederland") +
   theme_minimal() +
   theme(axis.title.x=element_blank(),
